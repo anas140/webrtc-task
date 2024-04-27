@@ -1,12 +1,15 @@
 // src/App.js
 import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
+import "./App.css"
 
 const App = () => {
   const videoRef = useRef(null); 
   const [mediaRecorder, setMediaRecorder] = useState(null); 
   const [isRecording, setIsRecording] = useState(false); 
   const [chunks, setChunks] = useState([]); 
+  const [recordingDuration, setRecordingDuration] = useState(0); // for track the recording duration
+  const [intervalId, setIntervalId] = useState(null);
 
   
   useEffect(() => {
@@ -22,7 +25,15 @@ const App = () => {
   const handleStartCapture = () => {
     if (mediaRecorder) {
       setIsRecording(true); 
+      setRecordingDuration(0);
       mediaRecorder.start(); 
+
+       // Start the timer to update recording duration every second
+      const newIntervalId = setInterval(() => {
+        setRecordingDuration((prev) => prev + 1); // Increment duration
+      }, 1000);
+      setIntervalId(newIntervalId);
+
       mediaRecorder.ondataavailable = (event) => {
         setChunks((prevChunks) => [...prevChunks, event.data]); 
       };
@@ -33,6 +44,8 @@ const App = () => {
   const handleStopCapture = () => {
     if (mediaRecorder) {
       setIsRecording(false); 
+      clearInterval(intervalId);
+      setIntervalId(null);
       mediaRecorder.stop(); 
       mediaRecorder.onstop = () => {
         const videoBlob = new Blob(chunks, { type: 'video/webm' }); 
@@ -54,13 +67,14 @@ const App = () => {
   };
 
   return (
-    <div>
+    <div className="app-container">
       <h1>WebRTC Video Capture</h1>
-      <video ref={videoRef} autoPlay></video> {/* Display live video */}
-      <div>
+      <video ref={videoRef} autoPlay className="centered-video"></video> {/* Centered video */}
+      <div className="button-container"> {/* Flex container for buttons */}
         <button onClick={handleStartCapture} disabled={isRecording}>Start Capture</button>
         <button onClick={handleStopCapture} disabled={!isRecording}>Stop Capture</button>
       </div>
+      <p>Recording Duration: {recordingDuration} seconds</p> {/* Display recording duration */}
     </div>
   );
 };
