@@ -1,6 +1,8 @@
 // src/App.js
 import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; 
 import "./App.css"
 
 const App = () => {
@@ -30,7 +32,7 @@ const App = () => {
 
        // Start the timer to update recording duration every second
       const newIntervalId = setInterval(() => {
-        setRecordingDuration((prev) => prev + 1); // Increment duration
+        setRecordingDuration((prev) => prev + 1);
       }, 1000);
       setIntervalId(newIntervalId);
 
@@ -55,12 +57,14 @@ const App = () => {
         axios.post('https://api.jrlabs.co/saveVideo', formData)
           .then((response) => {
             if (response.data.success) {
-              console.log('Upload successful:', response.data.message);
+              toast.success('Upload successful: ' + response.data.message);
             } else {
-              console.error('Upload failed');
+              toast.error('Upload failed'); 
             }
           })
-          .catch((error) => console.error('Upload error:', error));
+          .catch((error) => {
+            toast.error('Upload error: ' + error.message); 
+          });
       };
       setChunks([]);
     }
@@ -68,13 +72,14 @@ const App = () => {
 
   return (
     <div className="app-container">
-      <h1>WebRTC Video Capture</h1>
-      <video ref={videoRef} autoPlay className="centered-video"></video> {/* Centered video */}
-      <div className="button-container"> {/* Flex container for buttons */}
-        <button onClick={handleStartCapture} disabled={isRecording}>Start Capture</button>
-        <button onClick={handleStopCapture} disabled={!isRecording}>Stop Capture</button>
+      <h1>WebRTC Video </h1>
+      <video ref={videoRef} autoPlay className="centered-video"></video>
+      <div className="button-container"> 
+        <button onClick={handleStartCapture} disabled={isRecording} className="start-button">Start Capture</button>
+        <button onClick={handleStopCapture} disabled={!isRecording} className="stop-button">Stop Capture</button>
       </div>
-      <p>Recording Duration: {recordingDuration} seconds</p> {/* Display recording duration */}
+      <p>Recording Duration: {recordingDuration} seconds</p>
+      <ToastContainer />
     </div>
   );
 };
